@@ -1,0 +1,25 @@
+{
+  "name": "hx",
+  "version": "1.0.0",
+  "main": "dist/hx.min.js",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack",
+    "serve": "cross-env NODE_ENV=development webpack serve --open"
+  },
+  "keywords": [],
+  "author": "erichow",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.2.0",
+    "style-loader": "^3.2.1",
+    "terser-webpack-plugin": "^5.1.4",
+    "webpack": "^5.46.0",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "description": ""
+}
