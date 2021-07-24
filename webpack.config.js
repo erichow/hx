@@ -5,7 +5,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const NODE_ENV = process.env.NODE_ENV
 
 module.exports = {
-	mode: 'production',
+	mode: NODE_ENV,
 	entry: {
 		'hx.min': NODE_ENV === 'development' ? './src/test.js' : './src/index.js'
 	},
