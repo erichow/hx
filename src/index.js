@@ -1,10 +1,10 @@
 import _ from 'lodash'
-import path from 'path'
 import axios from 'axios'
 import url from 'url'
 import Qs from 'qs'
 import moment from 'moment-timezone'
 import { v4 as uuidv4 } from 'uuid'
+
 const version = '1.0.0'
 
 function existy(v) {
@@ -49,8 +49,6 @@ function createEventBus(type, fn) {
 			else {
 				arr.push({ uuid, fn })
 			}
-			
-
 		}
 		else {
 			map.set(type, [{ uuid, fn}])
@@ -99,6 +97,32 @@ function createEventBus(type, fn) {
 
 
 
+// 实例化axios
+function createAxiosInstance(options) {
+	const axios_instance = axios.create(options)
+	axios_instance.interceptors.request.use(function (config) {
+		// 在发送请求之前做些什么
+		return {
+			...config,
+			url: handleURL(config.url)
+		};
+	}, function (error) {
+		// 对请求错误做些什么
+		return Promise.reject(error);
+	})
+
+	axios_instance.interceptors.response.use(function (response) {
+		const { config } = response
+		config.responseCallback && config.responseCallback(response)
+		return response;
+	}, function (error) {
+		return Promise.reject(error);
+	})
+
+	return axios_instance;
+}
+
+
 const urlConfig = {
 	...function() {
 		const SERVER = ''
@@ -124,63 +148,24 @@ const urlConfig = {
 		}
 	},
 }
-
-// 实例化axios
-function createAxiosInstance(options) {
-	const axios_instance = axios.create(options)
-	axios_instance.interceptors.request.use(function (config) {
-		// 在发送请求之前做些什么
-		debugger;
-		console.log(_, path, handleURLByString)
-		const handleURL = handleURLWithConfig(config)
-		return handleURL(config.url);
-	}, function (error) {
-		// 对请求错误做些什么
-		return Promise.reject(error);
-	})
-
-	axios_instance.interceptors.response.use(function (response) {
-		const { config } = response
-		config.responseCallback && config.responseCallback(response)
-		return response;
-	}, function (error) {
-		return Promise.reject(error);
-	})
-
-	return axios_instance;
-}
-
-
-function handleURLByString(value, baseURL) {
-	const { protocol } = url.parse(value)
-	if (existy(protocol)) {
-		return value
-	}
-	return path.resovle(baseURL, value)
-}
-
-function handleURLByObj(value, baseURL) {
-	handleUrlByString(value.url, value.baseURL || baseURL)
-}
-
-const handleURLWithConfig = _.curryRight((value, config) => {
-	if (_.isString(value)) {
-		const { protocol } = url.parse(value)
-		if (existy(protocol)) {
+function handleURL(url) {
+	let isUrlkey = /^api\..*/.test(url)
+	if (isUrlkey) {
+		const value = urlConfig[url]
+		if (_.isString(value)) {
 			return value
 		}
-		return path.resovle(config.baseURL, value)
+		if (_.isObject(value)) {
+			return value.url
+		}
 	}
-	if (_.isObject(value)) {
-		return handleUrlByObj(value.url, value.baseURL || baseURL)
-	}
-})
+	return url
+}
 
 
 
 
 function getWithInstance(axios_instance, url, params) {
-	const Authorization = 'mytoken';
 	return axios_instance({
 		method: 'get',
 		responseType: 'blob',
@@ -193,15 +178,25 @@ function getWithInstance(axios_instance, url, params) {
 }
 
 
-const get = _.curry(getWithInstance)(createAxiosInstance({
+function curriedInstance(axios_instance) {
+	return function (url, params) {
+		return axios_instance({
+			url,
+			...params
+		})
+	}
+}
+
+let genInstance = _.flowRight(curriedInstance, createAxiosInstance)
+
+
+let get = genInstance({
 	baseURL: 'https://example/api',
 	method: 'get',
 	headers: {
 		version: 1,
 	}
-}))
-
-
+})
 
 
 
@@ -214,11 +209,7 @@ const hx = {
 	mapcat,
 	createEventBus,
 	uuid: uuidv4,
-	handleURLByString,
 	get,
 }
 
-get('api.获取验证码', {})
-
 export default hx
-

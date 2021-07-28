@@ -6,6 +6,7 @@ const NODE_ENV = process.env.NODE_ENV
 
 module.exports = {
 	mode: NODE_ENV,
+	devtool: NODE_ENV === 'development' ? 'source-map' : 'none',
 	entry: {
 		'hx.min': NODE_ENV === 'development' ? './src/test.js' : './src/index.js'
 	},
