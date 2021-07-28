@@ -96,90 +96,6 @@ function createEventBus(type, fn) {
 }
 
 
-function createRequest(){
-	const instance = axios.create({
-		url: '/user',
-		method: 'get', // default
-		// `baseURL` will be prepended to `url` unless `url` is absolute.
-		// It can be convenient to set `baseURL` for an instance of axios to pass relative URLs
-		// to methods of that instance.
-		baseURL: 'https://some-domain.com/api/',
-		// `transformRequest` allows changes to the request data before it is sent to the server
-		// This is only applicable for request methods 'PUT', 'POST', 'PATCH' and 'DELETE'
-		// The last function in the array must return a string or an instance of Buffer, ArrayBuffer,
-		// FormData or Stream
-		// You may modify the headers object.
-		transformRequest: [function (data, headers) {
-		    // Do whatever you want to transform the data
-		    return data;
-		}],
-		// `transformResponse` allows changes to the response data to be made before
-		// it is passed to then/catch
-		transformResponse: [function (data) {
-			// Do whatever you want to transform the data
-			return data;
-		}],
-		// `headers` are custom headers to be sent
-		headers: {'X-Requested-With': 'XMLHttpRequest'},
-		// `params` are the URL parameters to be sent with the request
-		// Must be a plain object or a URLSearchParams object
-		params: {
-			ID: 12345
-		},
-		// `paramsSerializer` is an optional function in charge of serializing `params`
-		// (e.g. https://www.npmjs.com/package/qs, http://api.jquery.com/jquery.param/)
-		paramsSerializer: function (params) {
-			return Qs.stringify(params, {arrayFormat: 'brackets'})
-		},
-		// `data` is the data to be sent as the request body
-		// Only applicable for request methods 'PUT', 'POST', 'DELETE , and 'PATCH'
-		// When no `transformRequest` is set, must be of one of the following types:
-		// - string, plain object, ArrayBuffer, ArrayBufferView, URLSearchParams
-		// - Browser only: FormData, File, Blob
-		// - Node only: Stream, Buffer
-		data: {
-			firstName: 'Fred'
-		},
-		// syntax alternative to send data into the body
-		// method post
-		// only the value is sent, not the key
-		data: 'Country=Brasil&City=Belo Horizonte',
-		// `timeout` specifies the number of milliseconds before the request times out.
-		// If the request takes longer than `timeout`, the request will be aborted.
-		timeout: 1 * 60 * 1000, // default is `0` (no timeout)
-		// `withCredentials` indicates whether or not cross-site Access-Control requests
-		// should be made using credentials
-		withCredentials: false, // default
-		// `adapter` allows custom handling of requests which makes testing easier.
-		// Return a promise and supply a valid response (see lib/adapters/README.md).
-		adapter: function (config) {
-			/* ... */
-		},
-		headers: {'X-Custom-Header': 'foobar'}
-	})
-
-	return instance
-}
-
-function request(urlkey, params, config) {
-	let instance = createRequest();
-	switch (typeof urlkey) {
-		case 'string':
-			const { protocol } = url.parse(urlkey)
-			if (existy(protocol)) {
-				// return axios.post( urlkey, params, config)
-				instance.request({
-					url,
-				})
-			}
-			handle_urlkey(urlConfig[urlkey])
-			break;
-		case 'object':
-			break;
-
-	}
-}
-
 function handle_urlkey(urlkey) {
 	urlValue = urlConfig[urlkey];
 	switch (typeof urlValue) {
@@ -201,6 +117,35 @@ function handle_urlkey(urlkey) {
 	}
 }
 
+const get = axios.create({
+	baseURL: 'https://abc/api',
+	method: 'get',
+	headers: {
+		version: 1,
+	}
+})
+
+const post = axios.create({
+	baseURL: 'https://abc/api',
+	method: 'post',
+	headers: {
+		version: 1,
+	}
+})
+
+get.interceptors.request.use(function (config) {
+	// 在发送请求之前做些什么
+	return config;
+}, function (error) {
+	// 对请求错误做些什么
+	return Promise.reject(error);
+})
+
+get.interceptors.response.use(function (response) {
+	return response;
+}, function (error) {
+	return Promise.reject(error);
+})
 
 const hx = {
 	version,
@@ -211,20 +156,12 @@ const hx = {
 	mapcat,
 	createEventBus,
 	uuid: uuidv4,
-	request,
+	get,
+	post,
 }
 
-// const urlConfig = {
-// 	'api.xxx': { 
-// 		url: '/api/path', 
-// 		method: 'post',
-// 		publicPath: 'https://www.baidu.com',
-// 		contentType: 'application/json;charset=utf-8',
-// 	},
-	// 'api.yyy': 'https://www.baidu.com/api/path',
-// }
-debugger;
-hx.request('https://evitest.sanyevi.cn/', {a: 1, b: 2, headers: {}}, {})
+
+
 
 export default hx
 
