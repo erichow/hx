@@ -1,7 +1,8 @@
 import _ from 'lodash'
+import path from 'path'
 import axios from 'axios'
-import Qs from 'qs'
 import url from 'url'
+import Qs from 'qs'
 import moment from 'moment-timezone'
 import { v4 as uuidv4 } from 'uuid'
 const version = '1.0.0'
@@ -96,56 +97,113 @@ function createEventBus(type, fn) {
 }
 
 
-function handle_urlkey(urlkey) {
-	urlValue = urlConfig[urlkey];
-	switch (typeof urlValue) {
-		case 'string':
-			const { protocol } = url.parse(urlValue)
-			if (existy(protocol)) {
-				return urlValue
-			}
-			return path.resovle(baseURL, urlValue)
-		case 'object':
-			const { url, method, publicPath, contentType } = urlValue
-			axios({
-				method,
-				url: path.resolve(publicPath || window.location.origin, url),
-				headers: {
 
+
+const urlConfig = {
+	...function() {
+		const SERVER = ''
+		return {
+			'api.登录请求': '/login',
+			'api.获取验证码': {
+				url: '/generateCaptcha',
+				responseType: 'blob',
+				responseCallback(res) {
+					debugger;
 				}
-			})
-	}
+			},
+		}
+	}(),
+	...function() {
+		const SERVER = '/portal'
+		return {
+			'api.获取用户修改密码间隔天数': '/system/user/getUserLastResetPwdDays',
+			'api.获取菜单': '/portal/sercurity/allMenuInfo',
+			'api.获取字典': '/portal/common/allDictionarys',
+			'api.请求页面权限': '/portal/sercurity/pages',
+			'api.请求元素权限': '/portal/sercurity/elements',
+		}
+	},
 }
 
-const get = axios.create({
-	baseURL: 'https://abc/api',
+// 实例化axios
+function createAxiosInstance(options) {
+	const axios_instance = axios.create(options)
+	axios_instance.interceptors.request.use(function (config) {
+		// 在发送请求之前做些什么
+		debugger;
+		console.log(_, path, handleURLByString)
+		const handleURL = handleURLWithConfig(config)
+		return handleURL(config.url);
+	}, function (error) {
+		// 对请求错误做些什么
+		return Promise.reject(error);
+	})
+
+	axios_instance.interceptors.response.use(function (response) {
+		const { config } = response
+		config.responseCallback && config.responseCallback(response)
+		return response;
+	}, function (error) {
+		return Promise.reject(error);
+	})
+
+	return axios_instance;
+}
+
+
+function handleURLByString(value, baseURL) {
+	const { protocol } = url.parse(value)
+	if (existy(protocol)) {
+		return value
+	}
+	return path.resovle(baseURL, value)
+}
+
+function handleURLByObj(value, baseURL) {
+	handleUrlByString(value.url, value.baseURL || baseURL)
+}
+
+const handleURLWithConfig = _.curryRight((value, config) => {
+	if (_.isString(value)) {
+		const { protocol } = url.parse(value)
+		if (existy(protocol)) {
+			return value
+		}
+		return path.resovle(config.baseURL, value)
+	}
+	if (_.isObject(value)) {
+		return handleUrlByObj(value.url, value.baseURL || baseURL)
+	}
+})
+
+
+
+
+function getWithInstance(axios_instance, url, params) {
+	const Authorization = 'mytoken';
+	return axios_instance({
+		method: 'get',
+		responseType: 'blob',
+		url,
+		headers: {
+			Authorization,
+		},
+		...params
+	})
+}
+
+
+const get = _.curry(getWithInstance)(createAxiosInstance({
+	baseURL: 'https://example/api',
 	method: 'get',
 	headers: {
 		version: 1,
 	}
-})
+}))
 
-const post = axios.create({
-	baseURL: 'https://abc/api',
-	method: 'post',
-	headers: {
-		version: 1,
-	}
-})
 
-get.interceptors.request.use(function (config) {
-	// 在发送请求之前做些什么
-	return config;
-}, function (error) {
-	// 对请求错误做些什么
-	return Promise.reject(error);
-})
 
-get.interceptors.response.use(function (response) {
-	return response;
-}, function (error) {
-	return Promise.reject(error);
-})
+
 
 const hx = {
 	version,
@@ -156,12 +214,11 @@ const hx = {
 	mapcat,
 	createEventBus,
 	uuid: uuidv4,
+	handleURLByString,
 	get,
-	post,
 }
 
-
-
+get('api.获取验证码', {})
 
 export default hx
 
