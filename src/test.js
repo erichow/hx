@@ -23,10 +23,12 @@ $http('api.验证码')
     // })
   })
 
-// $http('api.登录', {
-//   username: 'zhoudm5',
-//   password: 'Fire8120@@',
-//   captchacode: '1234',
-//   captchaid,
-//   type: 0,
-// })
+$http('api.登录', {
+  username: 'zhoudm5',
+  password: 'Fire8120@@',
+  captchacode: '1234',
+  captchaid: 'uuid',
+  type: 0,
+}).catch((err) => {
+  console.log(err)
+})

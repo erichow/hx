@@ -12,6 +12,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json'
 axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded'
 
 const urlcfg = {
+  
   ...(function () {
     const fw = 'portal'
     return {
@@ -19,6 +20,7 @@ const urlcfg = {
       'api.获取字典': `/${fw}/common/allDictionarys`,
     }
   })(),
+
   ...(function () {
     const fw = 'alarm'
     return {
@@ -26,6 +28,7 @@ const urlcfg = {
       'api.故障码详细': `/${fw}/alarm/detail`,
     }
   })(),
+
   'api.登录': {
     method: 'post',
     url: `/login`,
@@ -183,7 +186,7 @@ function urlkey2obj(str) {
   })
 */
 
-export default (urlkey, params) => {
+const $http = (urlkey, params) => {
   try {
     const urlobj = urlkey2obj(urlkey)
     const config = _.merge({}, obj2axioscfg(urlobj), obj2axioscfg(params))
@@ -192,3 +195,5 @@ export default (urlkey, params) => {
     console.error(err)
   }
 }
+
+export default $http
