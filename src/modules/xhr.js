@@ -3,6 +3,7 @@ import axios from 'axios'
 import url from 'url'
 
 // 全局的 axios 默认值
+axios.defaults.timeout = 3 * 1000
 axios.defaults.method = 'get'
 axios.defaults.baseURL = 'https://www.example.cn/api'
 axios.defaults.headers.common['Authorization'] = ''
@@ -13,32 +14,26 @@ axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded'
 const urlcfg = {
   ...(function () {
     const fw = 'portal'
-    return {}
+    return {
+      'api.获取菜单': `/${fw}/sercurity/allMenuInfo`,
+      'api.获取字典': `/${fw}/common/allDictionarys`,
+    }
   })(),
   ...(function () {
     const fw = 'alarm'
     return {
-      'api.围栏告警': {
-        headers: { a: '11' },
-        url: `/${fw}/login`,
-        responseType: 'blob',
-      },
-      'api.保存围栏': `${fw}/cache`,
+      'api.故障码查询': `/${fw}/alarm/code`,
+      'api.故障码详细': `/${fw}/alarm/detail`,
     }
   })(),
   'api.登录': {
     method: 'post',
     url: `/login`,
-    headers: {
-      version: '1.0.0',
-    },
-    // responseType: 'blob',
   },
   'api.验证码': {
     url: `/generateCaptcha`,
     responseType: 'blob',
   },
-  'api.忘记密码': 'https://www.baidu.com/abc',
 }
 
 /** 

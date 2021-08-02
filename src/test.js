@@ -5,15 +5,14 @@ $http('api.验证码')
   .then((res) => {
     const { captchaid } = res.headers
     const { config, data } = res
-
     const imgsrc = URL.createObjectURL(data)
-    // document.body.innerHTML = (src)
     document.body.innerHTML = `<img src ="${imgsrc}" />`
     return captchaid
   })
   .then((captchaid) => {})
   .catch((err) => {
-    console.error(err)
+    debugger;
+    console.log(err)
     // notification.open({
     //   message: 'Notification Title',
     //   description:
